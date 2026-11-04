@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#07060a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="AWS Fishing — เกมตกปลา pixel art ตอบคำถามความรู้ AWS Cloud เล่นได้บนเว็บและมือถือ">
+<title>AWS Fishing — ตกปลา ตอบคำถาม</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600&family=Pixelify+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="stage">
+  <canvas id="cv" width="480" height="270"></canvas>
+
+  <div id="ui">
+    <!-- inventory header -->
+    <div id="invTitle" class="plateTxt">กระเป๋า</div>
+    <div id="volBox" class="ia"><input id="vol" type="range" min="0" max="1" step="0.05" value="0.6" aria-label="ระดับเสียง"><span class="note">♪</span></div>
+    <!-- bottom hud -->
+    <div id="coinBox"><img data-icon="coin" alt=""><span id="coins">0</span></div>
+    <canvas id="portrait" width="24" height="28"></canvas>
+    <div id="hpBox"><div id="hpFill"></div><span id="hpText">100</span></div>
+
+    <div id="dropZone"><img id="dropIcon" data-icon="trash" alt=""><span id="dropTxt">ลากมาทิ้ง</span></div>
+    <div id="pendLabel">ลากปลาใส่กระเป๋า<br><small>แตะ = จัดวางอัตโนมัติ</small></div>
+    <div id="tip"></div>
+
+    <!-- DOCK UI -->
+    <div id="dockUI">
+      <div id="shopPanel" class="panel ia"><div class="panelTitle">ร้านไอเท็ม</div><div id="shopItems"></div></div>
+      <div id="upgPanel" class="panel ia"><div class="panelTitle">อัปเกรด</div><div id="upgList"></div></div>
+      <button id="btnSail" class="btn go">ออกเรือ <b>▶</b></button>
+      <button id="btnSellAll" class="btn gold"><img data-icon="coin" alt=""> ขายทั้งหมด <span id="sellVal"></span></button>
+      <button id="btnDex" class="btn sq" title="สมุดปลา"><img data-icon="dex" alt=""></button>
+      <button id="btnHelp" class="btn sq" title="วิธีเล่น">?</button>
+    </div>
+
+    <!-- SEA UI -->
+    <div id="seaUI">
+      <div id="zoneTitle"></div>
+      <div id="itemBar" class="ia"></div>
+      <div id="hint">
+        <div><span class="key">กดค้าง</span> เพื่อเหวี่ยงเบ็ด</div>
+        <div><span class="key">แตะ</span> เมื่อทุ่นจม <b class="bang">!</b></div>
+        <div><span class="key">คลิกขวา / R / แตะปลา</span> หมุนปลา</div>
+      </div>
+      <div id="eventBanner"><b id="evName"></b><small id="evTip"></small><div class="evbar"><i id="evBar"></i></div></div>
+      <button id="btnExtract" class="btn back"><b>◀</b> กลับท่าเรือ</button>
+    </div>
+
+    <div id="floats"></div>
+    <div id="toasts"></div>
+    <button id="btnFull" class="btn sq ia" title="เต็มจอ">⛶</button>
+
+    <!-- QUIZ -->
+    <div id="quiz" class="modal ia">
+      <div class="panel qbox">
+        <div class="qhead"><span id="qTitle">ปลาติดเบ็ด!</span><span id="qStars"></span></div>
+        <div class="qtop">
+          <canvas id="qFish" width="96" height="64"></canvas>
+          <div class="qgauge">
+            <div class="glabel"><span>แรงดิ้นหนี</span><span id="qProg"></span></div>
+            <div class="gbar"><i id="qGauge"></i><em id="qFishIcon">🐟</em></div>
+          </div>
+        </div>
+        <div id="qText" class="qtext"></div>
+        <div id="qAns" class="qans"></div>
+        <div id="qExp" class="qexp"></div>
+      </div>
+    </div>
+
+    <!-- MAP -->
+    <div id="mapModal" class="modal ia">
+      <div class="panel mbox">
+        <div class="panelTitle big">เลือกน่านน้ำ</div>
+        <div id="zoneList"></div>
+        <button class="btn close" data-close="mapModal">ปิด</button>
+      </div>
+    </div>
+
+    <!-- DEX -->
+    <div id="dexModal" class="modal ia">
+      <div class="panel dbox">
+        <div class="panelTitle big">สมุดบันทึกปลา <span id="dexCount"></span></div>
+        <div id="dexGrid"></div>
+        <button class="btn close" data-close="dexModal">ปิด</button>
+      </div>
+    </div>
+
+    <!-- MESSAGE -->
+    <div id="msgModal" class="modal ia">
+      <div class="panel sbox">
+        <div id="msgTitle" class="panelTitle big"></div>
+        <div id="msgBody"></div>
+        <div id="msgBtns"></div>
+      </div>
+    </div>
+
+    <!-- TITLE -->
+    <div id="title" class="ia">
+      <div class="logo">
+        <div class="l1">AWS</div>
+        <div class="l2">FISHING</div>
+        <div class="sub">ตกปลา · ตอบคำถาม · เอาตัวรอด</div>
+      </div>
+      <div class="tbtns">
+        <button id="btnContinue" class="btn go">เล่นต่อ</button>
+        <button id="btnNew" class="btn go">เริ่มเกมใหม่</button>
+        <button id="btnHow" class="btn">วิธีเล่น</button>
+      </div>
+      <div class="credit">กดหรือแตะที่ไหนก็ได้เพื่อเปิดเสียง</div>
+    </div>
+  </div>
+  <div id="crt"></div>
+</div>
+
+<script src="js/questions.js"></script>
+<script src="js/data.js"></script>
+<script src="js/gfx.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/scene.js"></script>
+<script src="js/inventory.js"></script>
+<script src="js/game.js"></script>
+</body>
+</html>
