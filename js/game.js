@@ -5,6 +5,7 @@
 const G=GFX, S=SCENE, I=INV, D=DATA, A=AUDIO;
 const $=id=>document.getElementById(id);
 const stage=$('stage'), cv=$('cv'), ctx=cv.getContext('2d'); ctx.imageSmoothingEnabled=false;
+const fxc=$('fx').getContext('2d'); fxc.imageSmoothingEnabled=false; // top layer above DOM panels (dragged / flying fish)
 const SAVE_KEY='awsfishing.save.v1';
 const C=G.CELL;
 const PEND={x:236,y:110};
@@ -437,11 +438,12 @@ function update(dt){
 }
 function render(dt){
   S.render(ctx,st,T,dt);
+  fxc.clearRect(0,0,480,270);
   const f=st.fishing;
   if(st.scene==='sea' && f && st.boatPos){ const bp=st.boatPos;
     if(f.state==='charge'){ const x=bp.x+34, y=bp.y-50; G.rect(ctx,x-1,y-1,34,7,'#0e0a08'); G.rect(ctx,x,y,32,5,'#2a2024'); const w=Math.round(30*f.power); G.rect(ctx,x+1,y+1,w,3, f.power>0.85?'#ffe066':(f.power>0.5?'#8ae06a':'#5ab0e8')); G.rect(ctx,x+1,y+1,w,1,'#ffffff'); }
     if(f.state==='bite'){ const x=bp.x+46, y=bp.y-44+Math.round(Math.sin(T*20)*2); G.rect(ctx,x-1,y-1,6,12,'#0e0a08'); G.rect(ctx,x,y,4,7,'#ffd23a'); G.rect(ctx,x,y+8,4,2,'#ffd23a'); G.rect(ctx,x,y,1,7,'#fff6c0'); }
-    if(f.state==='reel' && f.fly){ const p=f.piece; const m=G.mask(p.f,0); G.drawFish(ctx,p.f,0,f.fly.x-m.w*C/2,f.fly.y-m.h*C/2); }
+    if(f.state==='reel' && f.fly){ const p=f.piece; const m=G.mask(p.f,0); G.drawFish(fxc,p.f,0,f.fly.x-m.w*C/2,f.fly.y-m.h*C/2); }
   }
   if(st.scene!=='title') I.draw(ctx,st,T);
   // pending fish
@@ -452,7 +454,7 @@ function render(dt){
     pl.style.display='block'; pl.style.left=(PEND.x*2)+'px'; pl.style.top=((pr.y+pr.m.h*C+10)*2)+'px'; }
   else pl.style.display='none';
   // dragged
-  const d=st.drag; if(d&&d.active){ I.drawFloating(ctx,d.piece,Math.round(d.x-d.ox),Math.round(d.y-d.oy),T,true); }
+  const d=st.drag; if(d&&d.active){ I.drawFloating(fxc,d.piece,Math.round(d.x-d.ox),Math.round(d.y-d.oy),T,true); }
   S.fade(ctx,st.fade);
   drawPortrait(T);
 }
